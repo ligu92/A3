@@ -312,21 +312,49 @@ class SecurityMonitor extends Thread
 
 	/***************************************************************************
 	* CONCRETE METHOD:: SetArmedStatus
-	* Purpose: This method sets the temperature range
-	*
-	* Arguments: float lowtemp - low temperature range
-	*			 float hightemp - high temperature range
-	*
-	* Returns: none
-	*
-	* Exceptions: None
-	*
+	* Purpose: This method sets the armed status
 	***************************************************************************/
-
 	public void SetArmedStatus(boolean armed) {
 		alarms_armed = armed;
+		Arm(alarms_armed);
 		mw.WriteMessage( "*** Security alarms status set to: " + armed + " ***" );
 	} // SetArmedStatus
+
+	/***************************************************************************
+	* CONCRETE METHOD:: SetWindowStatus
+	* Purpose: This method sets the window status
+	***************************************************************************/
+	public void SetWindowStatus(boolean broken) {
+		window_break = broken;
+		if (broken) {
+			Trigger("Window");
+		}
+		mw.WriteMessage( "*** Window break set to: " + broken + " ***" );
+	} // SetWindowStatus
+
+	/***************************************************************************
+	* CONCRETE METHOD:: SetDoorStatus
+	* Purpose: This method sets the door status
+	***************************************************************************/
+	public void SetDoorStatus(boolean broken) {
+		door_break = broken;
+		if (broken) {
+			Trigger("Door");
+		}
+		mw.WriteMessage( "*** Door break set to: " + broken + " ***" );
+	} // SetDoorStatus
+
+	/***************************************************************************
+	* CONCRETE METHOD:: SetMotionStatus
+	* Purpose: This method sets the window status
+	***************************************************************************/
+	public void SetMotionStatus(boolean motion) {
+		motion_detected = motion;
+		if (motion) {
+			Trigger("Motion");
+		}
+		mw.WriteMessage( "*** Motion detect set to: " + motion + " ***" );
+	} // SetMotionStatus
 
 	/***************************************************************************
 	* CONCRETE METHOD:: Halt
@@ -396,6 +424,52 @@ class SecurityMonitor extends Thread
 			msg = new Message( (int) 6, "Disarm" );
 
 		} // if
+
+		// Here we send the message to the message manager.
+
+		try
+		{
+			em.SendMessage( msg );
+
+		} // try
+
+		catch (Exception e)
+		{
+			System.out.println("Error sending arm/disarm alarm message:: " + e);
+
+		} // catch
+
+	} // Alarm
+
+	/***************************************************************************
+	* CONCRETE METHOD:: Trigger
+	* Purpose: This method posts messages that will signal the alarm controller
+	*			to have some sort of intrusion alarm
+	*
+	* Arguments: String: "Window", "Door", "Motion" 
+	* 
+	* Returns: none
+	*
+	* Exceptions: Posting to message manager exception
+	*
+	***************************************************************************/
+
+	private void Trigger( String intrusion ) {
+		// Here we create the message.
+
+		Message msg;
+
+		if ( intrusion.equals("Window") ) {
+			msg = new Message( (int) 7, "Window" );
+		} 
+		else if (intrusion.equals("Door")) {
+			msg = new Message( (int) 7, "Door" );
+
+		} 
+		else  {
+			msg = new Message( (int) 7, "Motion" );
+
+		} 
 
 		// Here we send the message to the message manager.
 

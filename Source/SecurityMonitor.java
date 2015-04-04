@@ -283,6 +283,10 @@ class SecurityMonitor extends Thread
 				if (endTime - startTime > 2000) {
 					mw.WriteMessage("Alarm controller has not repsonded for more than 2 seconds, please alert the police.");
 					mw.WriteMessage("Alarm has not responded for:" + (endTime - startTime));
+					ai.SetLampColorAndMessage("OFFLINE", 0);
+					wi.SetLampColorAndMessage("OFFLINE", 0);
+					di.SetLampColorAndMessage("OFFLINE", 0);
+					mi.SetLampColorAndMessage("OFFLINE", 0);
 				}
 
 				// Sends the heartbeat on ID 8 so SystemC works

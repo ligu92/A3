@@ -181,6 +181,9 @@ class AlarmsController
 
 							// Confirm that the message was recieved and acted on
 							sendMsg.setCharAt(0, '0');
+							sendMsg.setCharAt(1, '0');
+							sendMsg.setCharAt(2, '0');
+							sendMsg.setCharAt(3, '0');
 							ConfirmMessage( em, sendMsg.toString() );
 
 						} // if

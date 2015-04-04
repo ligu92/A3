@@ -315,8 +315,8 @@ class SecurityMonitor extends Thread
 	* Purpose: This method sets the armed status
 	***************************************************************************/
 	public void SetArmedStatus(boolean armed) {
-		alarms_armed = armed;
-		Arm(alarms_armed);
+		//alarms_armed = armed;
+		Arm(armed);
 		mw.WriteMessage( "*** Security alarms status set to: " + armed + " ***" );
 	} // SetArmedStatus
 
@@ -325,7 +325,7 @@ class SecurityMonitor extends Thread
 	* Purpose: This method sets the window status
 	***************************************************************************/
 	public void SetWindowStatus(boolean broken) {
-		window_break = broken;
+		//window_break = broken;
 		if (broken) {
 			Trigger("Window");
 		}
@@ -337,7 +337,7 @@ class SecurityMonitor extends Thread
 	* Purpose: This method sets the door status
 	***************************************************************************/
 	public void SetDoorStatus(boolean broken) {
-		door_break = broken;
+		//door_break = broken;
 		if (broken) {
 			Trigger("Door");
 		}
@@ -349,7 +349,7 @@ class SecurityMonitor extends Thread
 	* Purpose: This method sets the window status
 	***************************************************************************/
 	public void SetMotionStatus(boolean motion) {
-		motion_detected = motion;
+		//motion_detected = motion;
 		if (motion) {
 			Trigger("Motion");
 		}

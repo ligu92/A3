@@ -268,8 +268,21 @@ class SecurityMonitor extends Thread
 					mi.SetLampColorAndMessage("NO MOTION", 1);
 				} // if
 
-				// This delay slows down the sample rate to Delay milliseconds
+				// Sends the heartbeat on ID 8 so SystemC works
+				Message heartbeat = new Message( (int) 8, "I am alive" );
+				try
+				{
+					em.SendMessage( heartbeat );
 
+				} // try
+
+				catch (Exception e)
+				{
+					System.out.println("Error sending heartbeat message:: " + e);
+
+				} // catch
+				
+				// This delay slows down the sample rate to Delay milliseconds
 				try
 				{
 					Thread.sleep( Delay );

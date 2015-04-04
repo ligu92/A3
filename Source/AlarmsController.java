@@ -248,6 +248,9 @@ class AlarmsController
 				    	mw.WriteMessage( "\n\nSimulation Stopped. \n");
 					} // if
 
+					// Send hearbeat even if nothing
+					ConfirmMessage( em, sendMsg.toString() );
+
 				} // for
 				try
 				{

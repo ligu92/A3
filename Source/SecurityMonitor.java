@@ -31,6 +31,8 @@ class SecurityMonitor extends Thread
 	boolean window_break = false;
 	boolean door_break = false;
 	boolean motion_detected = false;
+
+	long startTime = System.currentTimeMillis();
 	
 	boolean Registered = true;					// Signifies that this class is registered with an message manager.
 	MessageWindow mw = null;					// This is the message window
@@ -95,6 +97,8 @@ class SecurityMonitor extends Thread
 		boolean ON = true;				// Used to turn on heaters, chillers, humidifiers, and dehumidifiers
 		boolean OFF = false;			// Used to turn off heaters, chillers, humidifiers, and dehumidifiers
 
+		boolean alarmControllerAlive = true;
+
 		if (em != null)
 		{
 			// Now we create the Security status and message panel
@@ -158,17 +162,24 @@ class SecurityMonitor extends Thread
 
 					if ( Msg.GetMessageId() == -6 ) // Alarm status reading
 					{
+						startTime = System.currentTimeMillis();
 						try
 						{
 							// Parse the alarm status message to determine if
 							// the alarms are armed and to determine if the individual
 							// intrusions have been detected
 							String alarm_msg = Msg.GetMessage();
-							if (alarm_msg.charAt(0) == '1') {
+							/*if (alarm_msg.charAt(0) == '1') {
 								alarms_armed = true;
 							}
 							else {
 								alarms_armed = false;
+							}*/
+							if (!alarms_armed && alarm_msg.charAt(0) == '1') {
+								Arm(false);
+							}
+							else if (alarms_armed && alarm_msg.charAt(0) == '0') {
+								Arm(true);
 							}
 							if (alarm_msg.charAt(1) == '1') {
 								window_break = true;
@@ -268,6 +279,12 @@ class SecurityMonitor extends Thread
 					mi.SetLampColorAndMessage("NO MOTION", 1);
 				} // if
 
+				long endTime = System.currentTimeMillis();
+				if (endTime - startTime > 2000) {
+					mw.WriteMessage("Alarm controller has not repsonded for more than 2 seconds, please alert the police.");
+					mw.WriteMessage("Alarm has not responded for:" + (endTime - startTime));
+				}
+
 				// Sends the heartbeat on ID 8 so SystemC works
 				Message heartbeat = new Message( (int) 8, "I am alive" );
 				try
@@ -328,7 +345,7 @@ class SecurityMonitor extends Thread
 	* Purpose: This method sets the armed status
 	***************************************************************************/
 	public void SetArmedStatus(boolean armed) {
-		//alarms_armed = armed;
+		alarms_armed = armed;
 		Arm(armed);
 		mw.WriteMessage( "*** Security alarms status set to: " + armed + " ***" );
 	} // SetArmedStatus

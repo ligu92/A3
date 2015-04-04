@@ -103,12 +103,59 @@ public class SecurityConsole
 				if ( Option.equals( "2" ) ) {
 					// Here we disarm the system if it's armed, otherwise
 					// we just notify the user and do nothing.
+					// Disarming the alarm also sets everything intrusion
+					// detector to be status ok
 					if (alarms_armed) {
 						alarms_armed = false;
+						window_break = false;
+						door_break = false;
+						motion_detected = false;
 						Monitor.SetArmedStatus(false);
+						Monitor.SetWindowStatus(false);
+						Monitor.SetDoorStatus(false);
+						Monitor.SetMotionStatus(false);
 					}
 					else {
 						System.out.println("Alarms are already disarmed.");
+					}
+				} // if
+
+				//////////// option 3 ////////////
+
+				if ( Option.equals( "3" ) ) {
+					// Here we trigger the window break alarm for testing
+					if (!window_break) {
+						window_break = true;
+						Monitor.SetWindowStatus(true);
+					}
+					else {
+						System.out.println("Window already broken.");
+					}
+				} // if
+
+				//////////// option 4 ////////////
+
+				if ( Option.equals( "4" ) ) {
+					// Here we trigger the window break alarm for testing
+					if (!door_break) {
+						door_break = true;
+						Monitor.SetDoorStatus(true);
+					}
+					else {
+						System.out.println("Door already broken.");
+					}
+				} // if
+
+				//////////// option 5 ////////////
+
+				if ( Option.equals( "5" ) ) {
+					// Here we trigger the window break alarm for testing
+					if (!motion_detected) {
+						motion_detected = true;
+						Monitor.SetMotionStatus(true);
+					}
+					else {
+						System.out.println("Motion already detected.");
 					}
 				} // if
 

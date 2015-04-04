@@ -49,6 +49,8 @@ class AlarmsController
 		boolean DoorState = false;			// Doors: false == ok, true == broken
 		boolean MotionState = false;		// Motion: false == no motion, true == motion
 
+		StringBuilder sendMsg = new StringBuilder("0000");
+
 		int	Delay = 1000;					// The loop delay (1 second)
 		boolean Done = false;				// Loop termination flag
 
@@ -107,23 +109,16 @@ class AlarmsController
 		{
 			System.out.println("Registered with the message manager." );
 
-			/* Now we create the humidity control status and message panel
-			** We put this panel about 2/3s the way down the terminal, aligned to the left
-			** of the terminal. The status indicators are placed directly under this panel
-			*/
+			/* Now we create the alarm control status and message panel
+			** We put this panel about 1/3 the way down the terminal, aligned to the left
+			** of the terminal. */
 
 			float WinPosX = 0.0f; 	//This is the X position of the message window in terms
 									//of a percentage of the screen height
-			float WinPosY = 0.60f;	//This is the Y position of the message window in terms
+			float WinPosY = 0.33f;	//This is the Y position of the message window in terms
 								 	//of a percentage of the screen height
 
-			MessageWindow mw = new MessageWindow("Humidity Controller Status Console", WinPosX, WinPosY);
-
-			// Now we put the indicators directly under the humitity status and control panel
-
-			Indicator hi = new Indicator ("Humid OFF", mw.GetX(), mw.GetY()+mw.Height());
-			Indicator di = new Indicator ("DeHumid OFF", mw.GetX()+(hi.Width()*2), mw.GetY()+mw.Height());
-
+			MessageWindow mw = new MessageWindow("Alarm Controller Status", WinPosX, WinPosY);
 			mw.WriteMessage("Registered with the message manager." );
 
 	    	try
@@ -158,65 +153,73 @@ class AlarmsController
 				} // catch
 
 				// If there are messages in the queue, we read through them.
-				// We are looking for MessageIDs = 4, this is a request to turn the
-				// humidifier or dehumidifier on/off. Note that we get all the messages
-				// at once... there is a 2.5 second delay between samples,.. so
-				// the assumption is that there should only be a message at most.
-				// If there are more, it is the last message that will effect the
-				// output of the humidity as it would in reality.
-
+				// We are looking for MessageIDs = 6 or 7, see the top of the code
+				// for details
 				int qlen = eq.GetSize();
 
 				for ( int i = 0; i < qlen; i++ )
 				{
 					Msg = eq.GetMessage();
 
-					if ( Msg.GetMessageId() == 4 )
+					if ( Msg.GetMessageId() == 6 )
 					{
-						if (Msg.GetMessage().equalsIgnoreCase("H1")) // humidifier on
+						if (Msg.GetMessage().equalsIgnoreCase("Arm")) // arm yourself
 						{
-							HumidifierState = true;
-							mw.WriteMessage("Received humidifier on message" );
+							ArmedState = true;
+							mw.WriteMessage("Received arm message" );
 
 							// Confirm that the message was recieved and acted on
-
-							ConfirmMessage( em, "H1" );
+							sendMsg.setCharAt(0, '1');
+							ConfirmMessage( em, sendMsg.toString() );
 
 						} // if
 
-						if (Msg.GetMessage().equalsIgnoreCase("H0")) // humidifier off
+						if (Msg.GetMessage().equalsIgnoreCase("Disarm")) // disarm in peace
 						{
-							HumidifierState = false;
-							mw.WriteMessage("Received humidifier off message" );
+							ArmedState = false;
+							mw.WriteMessage("Received disarm message" );
 
 							// Confirm that the message was recieved and acted on
+							sendMsg.setCharAt(0, '0');
+							ConfirmMessage( em, sendMsg.toString() );
 
-							ConfirmMessage( em, "H0" );
+						} // if
+					} // if
+
+					if ( Msg.GetMessageId() == 7 )
+					{
+						if (Msg.GetMessage().equalsIgnoreCase("Window")) // broken window
+						{
+							WindowState = true;
+							mw.WriteMessage("Received window break" );
+
+							// Confirm that the message was recieved and acted on
+							sendMsg.setCharAt(1, '1');
+							ConfirmMessage( em, sendMsg.toString() );
 
 						} // if
 
-						if (Msg.GetMessage().equalsIgnoreCase("D1")) // dehumidifier on
+						if (Msg.GetMessage().equalsIgnoreCase("Door")) // broken door
 						{
-							DehumidifierState = true;
-							mw.WriteMessage("Received dehumidifier on message" );
+							DoorState = false;
+							mw.WriteMessage("Received door break" );
 
 							// Confirm that the message was recieved and acted on
-
-							ConfirmMessage( em, "D1" );
+							sendMsg.setCharAt(2, '1');
+							ConfirmMessage( em, sendMsg.toString() );
 
 						} // if
 
-						if (Msg.GetMessage().equalsIgnoreCase("D0")) // dehumidifier off
+						if (Msg.GetMessage().equalsIgnoreCase("Motion")) // motion detected
 						{
-							DehumidifierState = false;
-							mw.WriteMessage("Received dehumidifier off message" );
+							ArmedState = false;
+							mw.WriteMessage("Received motion detection" );
 
 							// Confirm that the message was recieved and acted on
-
-							ConfirmMessage( em, "D0" );
+							sendMsg.setCharAt(3, '1');
+							ConfirmMessage( em, sendMsg.toString() );
 
 						} // if
-
 					} // if
 
 					// If the message ID == 99 then this is a signal that the simulation
@@ -240,46 +243,9 @@ class AlarmsController
 				    	} // catch
 
 				    	mw.WriteMessage( "\n\nSimulation Stopped. \n");
-
-						// Get rid of the indicators. The message panel is left for the
-						// user to exit so they can see the last message posted.
-
-						hi.dispose();
-						di.dispose();
-
 					} // if
 
 				} // for
-
-				// Update the lamp status
-
-				if (HumidifierState)
-				{
-					// Set to green, humidifier is on
-
-					hi.SetLampColorAndMessage("HUMID ON", 1);
-
-				} else {
-
-					// Set to black, humidifier is off
-					hi.SetLampColorAndMessage("HUMID OFF", 0);
-
-				} // if
-
-				if (DehumidifierState)
-				{
-					// Set to green, dehumidifier is on
-
-					di.SetLampColorAndMessage("DEHUMID ON", 1);
-
-				} else {
-
-					// Set to black, dehumidifier is off
-
-					di.SetLampColorAndMessage("DEHUMID OFF", 0);
-
-				} // if
-
 				try
 				{
 					Thread.sleep( Delay );

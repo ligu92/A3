@@ -30,14 +30,7 @@ class MaintenanceMonitor extends Thread
 	boolean Registered = true;					// Signifies that this class is registered with an message manager.
 	MessageWindow mw = null;					// This is the message window
 	
-	class Client {
-		Indicator myIndicator;
-		long lastMessageTime;
-		
-	}
-	
-	
-	ArrayList<Client> connectedID;
+	ArrayList<Client> participants;
 
 	public MaintenanceMonitor()
 	{
@@ -95,11 +88,9 @@ class MaintenanceMonitor extends Thread
 
 		if (em != null)
 		{
-			// Now we create the Security status and message panel
-			// Note that we set up three indicators that are initially green. This is
-			// because the alarms are initialized to be disarmed. The exception
-			// is the indicator that shows armed status, it is initially red
-			// because the alarms are initially disarmed.
+			// Now we create the Maintenance status and message panel.
+			// We will dynamically create indicators for devices connected to the
+			// message bus as we discover them, and put them on the panel.
 			// This panel is placed in the upper right hand corner and the status
 			// indicators are placed directly below it.
 
@@ -149,12 +140,8 @@ class MaintenanceMonitor extends Thread
 
 					//Check the message's sender. If it's a new sender, add them to the array.
 					//Assign the sender ID to be the component's ID.
-					
-						//If the message type is X, X, X, then they're a X.
-						//If the message type is X, X, X, then they're a X.
-						//If the message type is X, X, X, then they're a X.
-						//If the message type is X, X, X, then they're a X.
-						//If the message type is X, X, X, then they're a X.
+					//Send the message code we got from their message.
+
 						//Otherwise, they're an unknown component. We'll give them a generic name.
 					
 					//If they're not a new sender, update the corresponding array element's last time seen field.
@@ -187,6 +174,7 @@ class MaintenanceMonitor extends Thread
 				} // for
 
 				//Iterate through all components in the array.
+				for (int i = 0; i <= 
 				//Check when we last saw them.
 				
 				//If the difference between the current time and the last time we saw them is greater than 2 seconds, the unit has gone offline.

@@ -52,7 +52,7 @@ class AlarmsController {
 
 		StringBuilder sendMsg = new StringBuilder("0000");
 
-		int Delay = 1500; // The loop delay (1.5 second)
+		int Delay = 500; // The loop delay (1.5 second)
 		boolean Done = false; // Loop termination flag
 
 		// ///////////////////////////////////////////////////////////////////////////////

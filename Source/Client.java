@@ -2,16 +2,50 @@ import InstrumentationPackage.*;
 import MessagePackage.*;
 
 class Client {
-	Indicator myIndicator;
-	long lastMessageTime;
-	String id;
-	String componentType;
+	private Indicator myIndicator;
+	private long lastMessageTime;
+	private long id;
+	private String componentType;
 	
-	public Client (Indicator _indicator, long _msgtime, String _id, int _mcode){
+	public Client (Indicator _indicator, long _msgtime, long _id, int _mcode){
 		this.myIndicator = _indicator;
 		this.lastMessageTime = _msgtime;
 		this.id = _id;		
 		this.componentType = getDeviceType(_mcode);			
+	}
+	
+	public Client (long _msgtime, long _id, int _mcode){
+		this.lastMessageTime = _msgtime;
+		this.id = _id;		
+		this.componentType = getDeviceType(_mcode);			
+	}
+	
+	public void updateTime(){
+		this.lastMessageTime = System.currentTimeMillis();
+	}
+	
+	public void updateTime(long _t){
+		this.lastMessageTime = _t;
+	}
+	
+	public Indicator getIndicator(){
+		return this.myIndicator;
+	}
+	
+	public void setIndicator(Indicator _i){
+		this.myIndicator = _i;
+	}
+	
+	public long getID(){
+		return this.id;
+	}
+	
+	public long getLastMessageTime(){
+		return this.lastMessageTime;
+	}
+	
+	public String getComponentType(){
+		return this.componentType;
 	}
 	
 	private String getDeviceType (int messageCode){

@@ -50,11 +50,11 @@ class Client {
 	
 	private String getDeviceType (int messageCode){
 		if (messageCode == -8){
-			//If the message code is -8, X, X, then they're a FireController.
+			//If the message code is -8, then they're a FireController.
 			return "Fire Controller";
 		}
 		if (messageCode == -9){
-			//If the message code is -9, X, X, then they're a SprinklerController.
+			//If the message code is -9, then they're a SprinklerController.
 			return "Sprinkler Controller";
 		}
 		if (messageCode == 10 || messageCode == 7 || messageCode == 6){
@@ -62,8 +62,28 @@ class Client {
 			return "Security Monitor";
 		}
 		if (messageCode == -6){
-			//If the message code is -6, X, X, then they're a AlarmsController.
+			//If the message code is -6, then they're a AlarmsController.
 			return "Alarm Controller";
+		}
+		if (messageCode == 4 || messageCode == 5){
+			//If the message code is 4, 5, then they're a ECSConsole.
+			return "ECS Console";
+		}
+		if (messageCode == 1){
+			//If the message code is 1, then they're a TemperatureSensor.
+			return "Temperature Sensor";
+		}
+		if (messageCode == 2){
+			//If the message code is 1, then they're a HumiditySensor.
+			return "Humidity Sensor";
+		}
+		if (messageCode == -4){
+			//If the message code is -4, then they're a HumidityController.
+			return "Humidity Controller";
+		}
+		if (messageCode == -5){
+			//If the message code is -4, then they're a TemperatureController.
+			return "Temperature Controller";
 		}
 		else{
 			//Unidentified component. Give it a generic name.

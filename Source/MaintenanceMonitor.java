@@ -30,7 +30,8 @@ class MaintenanceMonitor extends Thread
 	boolean Registered = true;					// Signifies that this class is registered with an message manager.
 	MessageWindow mw = null;					// This is the message window
 	
-	ArrayList<Client> participants;
+	ArrayList<Client> participants;				// Internal state used to track the participants we have witnessed.
+	ArrayList<Indicator> indicators;			// Internal state used to keep track of indicators for the participants.
 
 	public MaintenanceMonitor()
 	{
@@ -82,6 +83,11 @@ class MaintenanceMonitor extends Thread
 		Message Msg = null;				// Message object
 		MessageQueue eq = null;			// Message Queue
 		int MsgId = 0;					// User specified message ID
+		
+		//Initialize the internal state - we're tracking which participants we've seen,
+		//and we have an indicator for each of them to display on the GUI.
+		participants = new ArrayList<Client>();
+		indicators = new ArrayList<Indicator>();
 		
 		int	Delay = 500;				// The loop delay (0.5 seconds)
 		boolean Done = false;			// Loop termination flag
@@ -138,15 +144,26 @@ class MaintenanceMonitor extends Thread
 				{
 					Msg = eq.GetMessage();
 
-					//Check the message's sender. If it's a new sender, add them to the array.
-					//Assign the sender ID to be the component's ID.
-					//Send the message code we got from their message.
-
-						//Otherwise, they're an unknown component. We'll give them a generic name.
-					
-					//If they're not a new sender, update the corresponding array element's last time seen field.
-					
-					
+					//Check the message's sender. 
+					boolean newSender = true;
+					for (int c = 0; c < participants.size(); c++){
+						if (participants.get(c).getID() == Msg.GetSenderId()){
+							//If they're not a new sender, update the corresponding array element's last time seen field.
+							participants.get(c).updateTime();
+							//Mark their indicator as OK, with a green color.
+							participants.get(i).getIndicator().SetLampColor(1);
+							newSender = false;
+						}
+					}
+					if (newSender){
+						//Add the new participant to the array. Assign the sender ID to be the component's ID.			
+						participants.add(new Client(System.currentTimeMillis(), Msg.GetSenderId(), Msg.GetMessageId()));
+						
+						//Create a new indicator for the new participant, and assign it to that participant.
+						indicators.add(new Indicator(participants.get(participants.size() - 1).getComponentType() + " ID:" +  Msg.GetSenderId(), (50 * (indicators.size() % (3))), (20 * indicators.size()) % 500, 1));
+						participants.get(participants.size() - 1).setIndicator(indicators.get(indicators.size() - 1));
+					}
+									
 					// If the message ID == 99 then this is a signal that the simulation
 					// is to end. At this point, the loop termination flag is set to
 					// true and this process unregisters from the message manager.
@@ -173,21 +190,20 @@ class MaintenanceMonitor extends Thread
 
 				} // for
 
+				//Check if any participants have timed out, since we won't have updated their status.
 				//Iterate through all components in the array.
-				for (int i = 0; i <= 
-				//Check when we last saw them.
-				
-				//If the difference between the current time and the last time we saw them is greater than 2 seconds, the unit has gone offline.
-					//Update their indicator.
-					//Write a message indicating that the component has gone offline and may require maintenance.
-				long currentTime = System.currentTimeMillis();
-				if (currentTime - startTime > 2000) {
-					mw.WriteMessage("Alarm controller has not repsonded for more than 2 seconds, please alert the police.");
-					mw.WriteMessage("Alarm has not responded for:" + (currentTime - startTime));
-					ai.SetLampColorAndMessage("OFFLINE", 0);
-					wi.SetLampColorAndMessage("OFFLINE", 0);
-					di.SetLampColorAndMessage("OFFLINE", 0);
-					mi.SetLampColorAndMessage("OFFLINE", 0);
+				for (int i = 0; i < participants.size(); i++){
+					//Check when we last saw them. If it's been longer than 2 seconds, make an alert and change their indicator to reflect an error.
+					if (participants.get(i).getLastMessageTime() - System.currentTimeMillis() > 2000){
+						mw.WriteMessage(participants.get(i).getComponentType() 
+						+ " with ID: " 
+						+ participants.get(i).getID() 
+						+ " has not responded for " 
+						+ (participants.get(i).getLastMessageTime() - System.currentTimeMillis()) 
+						+ "ms and is in need of maintenance.");
+						
+						participants.get(i).getIndicator().SetLampColor(3);
+					}
 				}
 				
 				// This delay slows down the sample rate to Delay milliseconds

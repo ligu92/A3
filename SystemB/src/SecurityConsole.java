@@ -100,14 +100,14 @@ public class SecurityConsole
 								Monitor.SetSprinklerStatus(false);
 							}
 							else {
-								System.out.println("Sprinkler already off.");
+								//System.out.println("Sprinkler already off.");
 							}
 							if (fire_detect) {
 								fire_detect = false;
 								Monitor.SetFireStatus(false);
 							}
 							else {
-								System.out.println("Fire already off.");
+								//System.out.println("Fire already off.");
 							}
 							sprinklerStopDialog.setVisible(false);
 							sprinklerStopDialog.dispose();
@@ -228,7 +228,7 @@ public static void startPrompt(){
 						Monitor.SetSprinklerStatus(true);
 					}
 					else {
-						System.out.println("Sprinkler already on.");
+						//System.out.println("Sprinkler already on.");
 					}
 					dialog.setVisible(false);
 					sprinklerTurnoffPrompt=true;
@@ -241,7 +241,7 @@ public static void startPrompt(){
 						Monitor.SetSprinklerStatus(false);
 					}
 					else {
-						System.out.println("Sprinkler already off.");
+						//System.out.println("Sprinkler already off.");
 					}
 					
 					dialog.setVisible(false);
@@ -255,7 +255,7 @@ public static void startPrompt(){
 						Monitor.SetSprinklerStatus(true);
 					}
 					else {
-						System.out.println("Sprinkler already on.");
+						//System.out.println("Sprinkler already on.");
 					}
 					dialog.setVisible(false);
 					selection="No selection";

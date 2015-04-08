@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-  <groupId>com.cmu.architecture</groupId>
-  <artifactId>A3SystemB</artifactId>
+  <groupId>com.cmu.architecture.A3</groupId>
+  <artifactId>SystemB</artifactId>
   <packaging>jar</packaging>
 	<version>1.0</version>
-	<name>A3SystemB</name>
+	<name>SystemB</name>
 	<url>http://maven.apache.org</url>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-		<finalName>A3SystemB</finalName>
+		<finalName>SystemB</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -18,9 +18,34 @@
 ******************************************************************************************************************/
 import TermioPackage.*;
 import MessagePackage.*;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 
 public class SecurityConsole
 {
+	static String Option = null;				// Menu choice from user
+	//timer for sprinkler
+	static Thread t=null;
+	static Thread t1=null;
+	static Thread tSprinklerTurnoff=null;
+	static long promptStartTime=-1;
+	static long elapsedTime=0;
+	static String selection="No selection";
+	static JOptionPane jp=new JOptionPane("Start sprinkler or Stop the Fire alarm if it is false alarm\n Default sprinkle action in 10sec", JOptionPane.QUESTION_MESSAGE,JOptionPane.YES_NO_OPTION);
+	static JDialog dialog = jp.createDialog("Sprinkler!");
+	//Stop sprinkler option also stops fire
+	static JOptionPane sprinklerStopAlert=new JOptionPane("\n Stop Sprinkler\n This will also stop fire", JOptionPane.QUESTION_MESSAGE,JOptionPane.OK_CANCEL_OPTION);
+	static JDialog sprinklerStopDialog = sprinklerStopAlert.createDialog("Sprinkle Stop!");
+	//static String sprinkleOffSelection="No selection";
+	static boolean sprinklerTurnoffPrompt=false;
+	static boolean startprompting=false;
+	static boolean promptingStarted=false;
+	static boolean fire_detect = false;
+	static boolean sprinkler_start = false;
+	static boolean Done = false;
+
+	static SecurityMonitor Monitor = null;		// The environmental control system monitor
+
 	public static void main(String args[])
 	{
     	Termio UserInput = new Termio();	// Termio IO Object
@@ -28,7 +53,7 @@ public class SecurityConsole
 		String Option = null;				// Menu choice from user
 		Message Msg = null;					// Message object
 		boolean Error = false;				// Error flag
-		SecurityMonitor Monitor = null;		// The environmental control system monitor
+		
 		
 		// These parameters allow the console to internally keep track of
 		// whether the system is armed and which alarms have been triggered
@@ -36,6 +61,13 @@ public class SecurityConsole
 		boolean window_break = false;
 		boolean door_break = false;
 		boolean motion_detected = false;
+
+		// These parameters allow the console to internally keep track of
+		// whether the system is armed and which alarms have been triggered
+		//boolean alarms_armed = false;
+		boolean reset = false;
+
+		sprinklerStopDialog.setVisible(false);
 
 		/////////////////////////////////////////////////////////////////////////////////
 		// Get the IP address of the message manager
@@ -80,6 +112,8 @@ public class SecurityConsole
 				System.out.println( "3: Trigger a window break" );
 				System.out.println( "4: Trigger a door break" );
 				System.out.println( "5: Trigger a motion detecton" );
+				System.out.println( "6: Fire Detected" );
+				System.out.println( "7: Reset and Stop sprinkler" );
 				System.out.println( "X: Stop System\n" );
 				System.out.print( "\n>>>> " );
 				Option = UserInput.KeyboardReadString();
@@ -159,6 +193,43 @@ public class SecurityConsole
 					}
 				} // if
 
+				//////////// option 6 ////////////
+
+				if ( Option.equals( "6" ) ) {
+					// Here we trigger the fire detect alarm for testing
+					if (!fire_detect) {
+						fire_detect = true;
+						Monitor.SetFireStatus(true);
+						if(!promptingStarted){
+						    startPrompt();
+						    promptingStarted=false;
+						}
+						startprompting=true;
+					}
+					else {
+						System.out.println("Fire already detected.");
+					}
+				} // if
+				
+				if ( Option.equals( "7" ) ) {
+					// Resetting
+					if (fire_detect) {
+						fire_detect = false;
+						Monitor.SetFireStatus(false);
+					}
+					else {
+						System.out.println("Fire already Off.");
+					}
+					if (sprinkler_start) {
+						sprinkler_start = false;
+						Monitor.SetSprinklerStatus(false);
+					}
+					else {
+						System.out.println("Sprinkler already Off.");
+					}
+					
+				} // if
+
 				//////////// option X ////////////
 
 				if ( Option.equalsIgnoreCase( "X" ) )
@@ -186,5 +257,81 @@ public class SecurityConsole
 		} // if
 
   	} // main
+
+  	public static void startPrompt(){
+		t = new Thread(new Runnable() {
+			public void run() {
+				if(promptStartTime==-1 && !promptingStarted){
+					promptStartTime=System.currentTimeMillis();
+				}
+				while(true){
+					if(selection!=null && selection.equalsIgnoreCase("0")){//Sprinkle start yes
+						if (!sprinkler_start) {
+							sprinkler_start = true;
+							Monitor.SetSprinklerStatus(true);
+						}
+						else {
+							//System.out.println("Sprinkler already on.");
+						}
+						dialog.setVisible(false);
+						sprinklerTurnoffPrompt=true;
+						selection="No selection";
+						break;
+					}
+					if(selection!=null && selection.equalsIgnoreCase("1")){//Sprinkle start no indicating false alarm
+						if (sprinkler_start) {
+							sprinkler_start = false;
+							Monitor.SetSprinklerStatus(false);
+						}
+						else {
+							//System.out.println("Sprinkler already off.");
+						}
+						
+						dialog.setVisible(false);
+						selection="No selection";
+						break;
+					}
+					elapsedTime=(System.currentTimeMillis()-promptStartTime);
+					if(elapsedTime>=10000){//Make default sprinkle action
+						if (!sprinkler_start && jp.getValue()!=null) {//ensures close button press
+							sprinkler_start = true;
+							Monitor.SetSprinklerStatus(true);
+						}
+						else {
+							//System.out.println("Sprinkler already on.");
+						}
+						dialog.setVisible(false);
+						selection="No selection";
+						//sprinklerTurnoffPrompt=true;
+						break;
+					}
+				}
+				promptStartTime=-1;
+			}
+		});
+		t.start();
+		//create thread for input taking
+		t1 = new Thread(new Runnable() {
+			public void run() {
+				dialog.setVisible(true);
+				while(true){
+				 if(jp.getValue() != null)
+		          selection=jp.getValue().toString();
+				 
+		          if(selection!=null && selection.equalsIgnoreCase("0")){//Sprinkle start yes
+						break;
+					}
+					if(selection!=null && selection.equalsIgnoreCase("1")){//Sprinkle start no indicating false alarm
+						break;
+					}
+					if(elapsedTime>=10000){
+						//dialog.setVisible(false);
+						break;
+					}	          
+		 		    }//while
+			}
+		});
+		t1.start();
+	}
 
 } // ECSConsole

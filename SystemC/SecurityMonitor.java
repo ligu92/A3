@@ -19,6 +19,8 @@
 import InstrumentationPackage.*;
 import MessagePackage.*;
 import java.util.*;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 
 class SecurityMonitor extends Thread
 {
@@ -40,6 +42,25 @@ class SecurityMonitor extends Thread
 	Indicator wi;								// Window break indicator
 	Indicator di;								// Door break indicator
 	Indicator mi;								// Motion detector indicator
+
+	JOptionPane pane = new JOptionPane("Sprinkles within 10sec",
+			JOptionPane.YES_NO_OPTION);
+	// These parameters allow the console to internally keep track of
+	// whether the system is armed and which alarms have been triggered
+	boolean fire_detect = false;
+	boolean sprinkler_start = false;
+
+	// Sprinkler user action prompting thread and the selection
+	Thread t = null;
+	int selection = 11;
+	// Sprinkler prompt start time
+	long promptStartTime = -1;
+
+	long startTimeFire = System.currentTimeMillis();
+	long startTimeSprinkle = System.currentTimeMillis();
+
+	Indicator fi; // fire indicator
+	Indicator si; // sprinkler indicator
 
 	public SecurityMonitor()
 	{
@@ -92,7 +113,7 @@ class SecurityMonitor extends Thread
 		MessageQueue eq = null;			// Message Queue
 		int MsgId = 0;					// User specified message ID
 		
-		int	Delay = 500;				// The loop delay (0.5 seconds)
+		int	Delay = 1000;				// The loop delay (1 seconds)
 		boolean Done = false;			// Loop termination flag
 		boolean ON = true;				// Used to turn on heaters, chillers, humidifiers, and dehumidifiers
 		boolean OFF = false;			// Used to turn off heaters, chillers, humidifiers, and dehumidifiers
@@ -114,6 +135,10 @@ class SecurityMonitor extends Thread
 			wi = new Indicator ("WIN OK", mw.GetX()+ai.Width(), mw.GetY()+mw.Height(), 1);
 			di = new Indicator ("DOOR OK", mw.GetX()+ai.Width()*2, mw.GetY()+mw.Height(), 1);
 			mi = new Indicator ("NO MOTION", mw.GetX()+ai.Width()*3, mw.GetY()+mw.Height(), 1);
+			fi = new Indicator("NoFire", mw.GetX(), mw.GetY()
+					+ mw.Height()*2, 1);
+			si = new Indicator(" SprinklerOFF", fi.GetX() + fi.Width() * 2,
+					mw.GetY() + mw.Height()*2, 3);
 
 			mw.WriteMessage( "Registered with the message manager." );
 
@@ -210,6 +235,53 @@ class SecurityMonitor extends Thread
 
 					} // if
 
+					if (Msg.GetMessageId() == -8) // Fire Alarm status reading
+					{
+						startTimeFire = System.currentTimeMillis();
+						try {
+							// Parse the alarm status message to determine if
+							// the alarms are armed and to determine if the
+							// individual
+							// intrusions have been detected
+							String alarm_msg = Msg.GetMessage();
+							if (alarm_msg.charAt(1) == '1') {
+								fire_detect = true;
+							} else if (alarm_msg.charAt(1) == '0') {
+								fire_detect = false;
+							}
+						} // try
+
+						catch (Exception e) {
+							mw.WriteMessage("Error reading alarm status: " + e);
+
+						} // catch
+
+					} // if
+
+					if (Msg.GetMessageId() == -9) // Fire Alarm status reading
+					{
+						startTimeSprinkle = System.currentTimeMillis();
+						try {
+							// Parse the alarm status message to determine if
+							// the alarms are armed and to determine if the
+							// individual
+							// intrusions have been detected
+							String alarm_msg = Msg.GetMessage();
+
+							if (alarm_msg.charAt(1) == '1') {
+								sprinkler_start = true;
+							} else if (alarm_msg.charAt(1) == '0') {
+								sprinkler_start = false;
+							}
+						} // try
+
+						catch (Exception e) {
+							mw.WriteMessage("Error reading alarm status: " + e);
+
+						} // catch
+
+					} // if
+
 					// If the message ID == 99 then this is a signal that the simulation
 					// is to end. At this point, the loop termination flag is set to
 					// true and this process unregisters from the message manager.
@@ -287,6 +359,43 @@ class SecurityMonitor extends Thread
 					wi.SetLampColorAndMessage("OFFLINE", 0);
 					di.SetLampColorAndMessage("OFFLINE", 0);
 					mi.SetLampColorAndMessage("OFFLINE", 0);
+				}
+
+				mw.WriteMessage("fire detected: " + fire_detect + " Sprinkle: "
+						+ sprinkler_start);
+
+				// Check alarm status and change indicators if necessary
+				// Only show alarms as triggered if the alarm is actually armed
+				// If the alarms are disarmed, the three intrusion indicators
+				// show green no matter what
+				/*if (alarms_armed) {
+					ai.SetLampColorAndMessage("ARMED", 1);*/
+					if (fire_detect) {
+						fi.SetLampColorAndMessage("FIRE!", 3);
+					}// if
+					else {
+						fi.SetLampColorAndMessage("NO FIRE", 1);
+					}
+
+					if (sprinkler_start) {
+						si.SetLampColorAndMessage("SPRINKLER ON", 1);
+					} else {
+						si.SetLampColorAndMessage("SPRINKLER OFF", 3);
+					}
+
+				endTime = System.currentTimeMillis();
+
+				if (endTime - startTimeFire > 6000) {
+					mw.WriteMessage("Fire controller has not repsonded for more than 6 seconds, please alert the Fire Department.");
+					mw.WriteMessage("Alarm has not responded for:"
+							+ (endTime - startTimeFire));
+					fi.SetLampColorAndMessage("OFFLINE", 0);
+				}
+				if (endTime - startTimeSprinkle > 6000) {
+					mw.WriteMessage("Sprinkle controller has not repsonded for more than 6 seconds, please alert the Fire Department.");
+					mw.WriteMessage("Alarm has not responded for:"
+							+ (endTime - startTimeSprinkle));
+					si.SetLampColorAndMessage("OFFLINE", 0);
 				}
 
 				// Sends the heartbeat on ID 8 so SystemC works
@@ -389,6 +498,34 @@ class SecurityMonitor extends Thread
 		}
 		mw.WriteMessage( "*** Motion detect set to: " + motion + " ***" );
 	} // SetMotionStatus
+
+	/***************************************************************************
+	 * CONCRETE METHOD:: SetFireStatus Purpose: This method sets the window
+	 * status
+	 ***************************************************************************/
+	public void SetFireStatus(boolean detected) {
+		// window_break = broken;
+		if (detected) {
+			Trigger("Fire");
+		} else {// If false it is asking for stopping fire
+			Trigger("FireOff");
+		}
+		mw.WriteMessage("*** Fire  alarm set to: " + detected + " ***");
+	} // SetFireStatus
+
+	/***************************************************************************
+	 * CONCRETE METHOD:: SetSprinklerStatus Purpose: This method sets the window
+	 * status
+	 ***************************************************************************/
+	public void SetSprinklerStatus(boolean start) {
+		// window_break = broken;
+		if (start) {
+			Trigger("Sprinkle");
+		} else {// If false it is asking for stopping fire
+			Trigger("SprinkleOff");
+		}
+		mw.WriteMessage("*** Sprinkler operation status: " + start + " ***");
+	} // SetSprinklerStatus
 
 	/***************************************************************************
 	* CONCRETE METHOD:: Halt
@@ -500,10 +637,22 @@ class SecurityMonitor extends Thread
 			msg = new Message( (int) 7, "Door" );
 
 		} 
-		else  {
+		else if (intrusion.equals("Motion")){
 			msg = new Message( (int) 7, "Motion" );
-
 		} 
+		else if (intrusion.equals("Fire")) {
+			msg = new Message((int) 8, "Fire");
+		} else if (intrusion.equals("Sprinkle")) {
+			msg = new Message((int) 9, "Sprinkle");
+
+		} else if (intrusion.equals("FireOff")) {
+			msg = new Message((int) 8, "FireOff");
+
+		} else {
+			msg = new Message((int) 9, "SprinkleOff");
+
+		}
+		
 
 		// Here we send the message to the message manager.
 

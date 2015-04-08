@@ -1,5 +1,5 @@
 /******************************************************************************************************************
- * File:SprinklersController.java
+ * File:AlarmsController.java
  * Course: 17655
  * Project: Assignment A3
  *
@@ -51,7 +51,7 @@ class SprinklerController {
 
 		StringBuilder sendMsg = new StringBuilder("00");
 
-		int Delay = 500; // The loop delay (1.5 second)
+		int Delay = 1500; // The loop delay (1 second)
 		boolean Done = false; // Loop termination flag
 
 		// ///////////////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ class SprinklerController {
 				} // catch
 
 				// If there are messages in the queue, we read through them.
-				// We are looking for MessageIDs = 6 or 7, see the top of the
+				// We are looking for MessageIDs = 6 or 9, see the top of the
 				// code
 				// for details
 				int qlen = eq.GetSize();
@@ -164,43 +164,12 @@ class SprinklerController {
 				for (int i = 0; i < qlen; i++) {
 					Msg = eq.GetMessage();
 
-					if (Msg.GetMessageId() == 6) {
-						if (Msg.GetMessage().equalsIgnoreCase("Arm")) // arm
-																		// yourself
-						{
-							ArmedState = true;
-							mw.WriteMessage("Received arm message");
-
-							// Confirm that the message was recieved and acted
-							// on
-							sendMsg.setCharAt(0, '1');
-							ConfirmMessage(em, sendMsg.toString());
-							continue;
-
-						} // if
-
-						if (Msg.GetMessage().equalsIgnoreCase("Disarm")) // disarm
-																			// in
-																			// peace
-						{
-							ArmedState = false;
-							mw.WriteMessage("Received disarm message");
-
-							// Confirm that the message was recieved and acted
-							// on
-							sendMsg.setCharAt(0, '0');
-							sendMsg.setCharAt(1, '0');
-							ConfirmMessage(em, sendMsg.toString());
-							continue;
-						} // if
-					} // if
-
 					if (Msg.GetMessageId() == 9) {
 						if (Msg.GetMessage().equalsIgnoreCase("Sprinkle")) // broken
 																			// window
 						{
 							SprinklerState = true;
-							mw.WriteMessage("Received Sprinkler Start");
+							mw.WriteMessage("Sprinkler Started");
 
 							// Confirm that the message was recieved and acted
 							// on
@@ -212,7 +181,7 @@ class SprinklerController {
 																				// window
 						{
 							SprinklerState = true;
-							mw.WriteMessage("Received Sprinkler Stop");
+							mw.WriteMessage("Sprinkler Stopped");
 
 							// Confirm that the message was recieved and acted
 							// on
@@ -249,7 +218,7 @@ class SprinklerController {
 
 				// Send hearbeat even if nothing
 				// ConfirmMessage( em, sendMsg.toString() );
-				// Sends the heartbeat on ID 10 so SystemC works
+				// Sends the heartbeat on ID -9 so SystemC works
 				Message heartbeat = new Message((int) -9, "I am alive");
 				try {
 					em.SendMessage(heartbeat);
@@ -318,4 +287,4 @@ class SprinklerController {
 
 	} // PostMessage
 
-} // Sprinkler Controller
+} // SprinklerController

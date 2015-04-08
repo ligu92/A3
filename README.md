@@ -80,7 +80,7 @@ To test the system:
 System C
 *************
 1) Open up a terminal/command prompt
-2) Chanege directory to folder labeled "System C"
+2) Chanege directory to folder labeled "SystemC"
 3) Run "javac *.java" 
 4) Run "rmic MessageManager"
 5) Run "rmiregistry"

@@ -45,7 +45,6 @@ class FireController
 		int MsgId = 0;						// User specified message ID
 		MessageManagerInterface em = null;	// Interface object to the message manager
 
-		boolean ArmedState = false;			// Alarms armed: false == disarmed, true == armed
 		boolean FireState = false;		// Windows: false == no fire, true == fire detected
 
 		StringBuilder sendMsg = new StringBuilder("00");
@@ -159,35 +158,7 @@ class FireController
 				for ( int i = 0; i < qlen; i++ )
 				{
 					Msg = eq.GetMessage();
-
-					if ( Msg.GetMessageId() == 6 )
-					{
-						if (Msg.GetMessage().equalsIgnoreCase("Arm")) // arm yourself
-						{
-							ArmedState = true;
-							mw.WriteMessage("Received arm message" );
-
-							// Confirm that the message was recieved and acted on
-							sendMsg.setCharAt(0, '1');
-							ConfirmMessage( em, sendMsg.toString() );
-							continue;
-						} // if
-
-						if (Msg.GetMessage().equalsIgnoreCase("Disarm")) // disarm in peace
-						{
-							ArmedState = false;
-							mw.WriteMessage("Received disarm message" );
-
-							// Confirm that the message was recieved and acted on
-							sendMsg.setCharAt(0, '0');
-							sendMsg.setCharAt(1, '0');
-							ConfirmMessage( em, sendMsg.toString() );
-							continue;
-
-						} // if
-						continue;
-					} // if
-
+					
 					if ( Msg.GetMessageId() == 8 )
 					{
 						if (Msg.GetMessage().equalsIgnoreCase("Fire")) // broken window

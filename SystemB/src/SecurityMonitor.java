@@ -42,12 +42,12 @@ class SecurityMonitor extends Thread {
 	// Sprinkler prompt start time
 	long promptStartTime = -1;
 
-	long startTime = System.currentTimeMillis();
+	long startTimeFire = System.currentTimeMillis();
+	long startTimeSprinkle = System.currentTimeMillis();
 
 	boolean Registered = true; // Signifies that this class is registered with
 								// an message manager.
 	MessageWindow mw = null; // This is the message window
-	Indicator ai; // Armed indicator
 	Indicator fi; // fire indicator
 	Indicator si; // sprinkler indicator
 
@@ -119,9 +119,7 @@ class SecurityMonitor extends Thread {
 			// indicators are placed directly below it.
 
 			mw = new MessageWindow("Security Monitoring Console", 0.5f, 0);
-			ai = new Indicator("DISARMED", mw.GetX(), mw.GetY() + mw.Height(),
-					3);
-			fi = new Indicator("NoFire", ai.GetX() + ai.Width() * 2, mw.GetY()
+			fi = new Indicator("NoFire", mw.GetX(), mw.GetY()
 					+ mw.Height(), 1);
 			si = new Indicator(" SprinklerOFF", fi.GetX() + fi.Width() * 2,
 					mw.GetY() + mw.Height(), 3);
@@ -167,19 +165,13 @@ class SecurityMonitor extends Thread {
 
 					if (Msg.GetMessageId() == -8) // Fire Alarm status reading
 					{
-						startTime = System.currentTimeMillis();
+						startTimeFire = System.currentTimeMillis();
 						try {
 							// Parse the alarm status message to determine if
 							// the alarms are armed and to determine if the
 							// individual
 							// intrusions have been detected
 							String alarm_msg = Msg.GetMessage();
-							if (!alarms_armed && alarm_msg.charAt(0) == '1') {
-								Arm(false);
-							} else if (alarms_armed
-									&& alarm_msg.charAt(0) == '0') {
-								Arm(true);
-							}
 							if (alarm_msg.charAt(1) == '1') {
 								fire_detect = true;
 							} else if (alarm_msg.charAt(1) == '0') {
@@ -196,7 +188,7 @@ class SecurityMonitor extends Thread {
 
 					if (Msg.GetMessageId() == -9) // Fire Alarm status reading
 					{
-						startTime = System.currentTimeMillis();
+						startTimeSprinkle = System.currentTimeMillis();
 						try {
 							// Parse the alarm status message to determine if
 							// the alarms are armed and to determine if the
@@ -204,12 +196,6 @@ class SecurityMonitor extends Thread {
 							// intrusions have been detected
 							String alarm_msg = Msg.GetMessage();
 
-							if (!alarms_armed && alarm_msg.charAt(0) == '1') {
-								Arm(false);
-							} else if (alarms_armed
-									&& alarm_msg.charAt(0) == '0') {
-								Arm(true);
-							}
 							if (alarm_msg.charAt(1) == '1') {
 								sprinkler_start = true;
 							} else if (alarm_msg.charAt(1) == '0') {
@@ -250,23 +236,21 @@ class SecurityMonitor extends Thread {
 						// for the
 						// user to exit so they can see the last message posted.
 
-						ai.dispose();
 						fi.dispose();
 						si.dispose();
 					} // if
 
 				} // for
 
-				mw.WriteMessage("Alarms armed: " + alarms_armed
-						+ " fire detected: " + fire_detect + " Sprinkle: "
+				mw.WriteMessage("fire detected: " + fire_detect + " Sprinkle: "
 						+ sprinkler_start);
 
 				// Check alarm status and change indicators if necessary
 				// Only show alarms as triggered if the alarm is actually armed
 				// If the alarms are disarmed, the three intrusion indicators
 				// show green no matter what
-				if (alarms_armed) {
-					ai.SetLampColorAndMessage("ARMED", 1);
+				/*if (alarms_armed) {
+					ai.SetLampColorAndMessage("ARMED", 1);*/
 					if (fire_detect) {
 						fi.SetLampColorAndMessage("FIRE!", 3);
 					}// if
@@ -279,22 +263,21 @@ class SecurityMonitor extends Thread {
 					} else {
 						si.SetLampColorAndMessage("SPRINKLER OFF", 3);
 					}
-				} else {
-					ai.SetLampColorAndMessage("DISARMED", 3);
-					fi.SetLampColorAndMessage("NO FIRE", 1);
-					si.SetLampColorAndMessage("SPRINKLER OFF", 3);
-				} // if
 
 				long endTime = System.currentTimeMillis();
+
 				if (endTime - startTime > 6000) {
 					mw.WriteMessage("Fire controller has not repsonded for more than 6 seconds, please alert the Fire Department.");
 					mw.WriteMessage("Alarm has not responded for:"
-							+ (endTime - startTime));
-					ai.SetLampColorAndMessage("OFFLINE", 0);
+							+ (endTime - startTimeFire));
 					fi.SetLampColorAndMessage("OFFLINE", 0);
+				}
+				if (endTime - startTimeSprinkle > 6000) {
+					mw.WriteMessage("Sprinkle controller has not repsonded for more than 6 seconds, please alert the Fire Department.");
+					mw.WriteMessage("Alarm has not responded for:"
+							+ (endTime - startTimeSprinkle));
 					si.SetLampColorAndMessage("OFFLINE", 0);
 				}
-
 				// Sends the heartbeat on ID 10 so SystemC works
 				Message heartbeat = new Message((int) 10, "I am alive");
 				try {

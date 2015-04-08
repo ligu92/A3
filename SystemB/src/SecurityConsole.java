@@ -37,7 +37,7 @@ public class SecurityConsole
 	//Stop sprinkler option also stops fire
 	static JOptionPane sprinklerStopAlert=new JOptionPane("\n Stop Sprinkler\n This will also stop fire", JOptionPane.QUESTION_MESSAGE,JOptionPane.OK_CANCEL_OPTION);
 	static JDialog sprinklerStopDialog = sprinklerStopAlert.createDialog("Sprinkle Stop!");
-	static String sprinkleOffSelection="No selection";
+	//static String sprinkleOffSelection="No selection";
 	static boolean sprinklerTurnoffPrompt=false;
 	static boolean startprompting=false;
 	static boolean promptingStarted=false;
@@ -83,7 +83,7 @@ public class SecurityConsole
 		{
 			Monitor.start(); // Here we start the monitoring and control thread
 			
-            //////////// sprinkle stop ////////////
+    /*        //////////// sprinkle stop ////////////
 			//create thread for input taking
 		tSprinklerTurnoff = new Thread(new Runnable() {
 		public void run() {
@@ -126,7 +126,7 @@ public class SecurityConsole
 				}//while
 			}
 		});
-		tSprinklerTurnoff.start();
+		tSprinklerTurnoff.start();*/
 		
 			while (!Done)
 			{
@@ -144,7 +144,7 @@ public class SecurityConsole
 				// Gives the user options to interact with the system
 				System.out.println( "Select an Option: \n" );
 				System.out.println( "6: Fire Detected" );
-				System.out.println( "7: Reset" );
+				System.out.println( "7: Reset and Stop sprinkler" );
 				System.out.println( "X: Stop System\n" );
 				System.out.print( "\n>>>> " );
 				
@@ -259,7 +259,7 @@ public static void startPrompt(){
 					}
 					dialog.setVisible(false);
 					selection="No selection";
-					sprinklerTurnoffPrompt=true;
+					//sprinklerTurnoffPrompt=true;
 					break;
 				}
 			}

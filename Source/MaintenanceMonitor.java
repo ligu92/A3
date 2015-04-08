@@ -194,7 +194,7 @@ class MaintenanceMonitor extends Thread
 				//Iterate through all components in the array.
 				for (int i = 0; i <= participants.size() - 1; i++){
 					//Check when we last saw them. If it's been longer than 2 seconds, make an alert and change their indicator to reflect an error.
-					if (participants.get(i).getLastMessageTime() - System.currentTimeMillis() < 2000){
+					if (participants.get(i).getLastMessageTime() - System.currentTimeMillis() < -2000){
 						mw.WriteMessage(participants.get(i).getComponentType() 
 						+ " with ID: " 
 						+ participants.get(i).getID() 

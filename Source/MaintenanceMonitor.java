@@ -151,7 +151,7 @@ class MaintenanceMonitor extends Thread
 							//If they're not a new sender, update the corresponding array element's last time seen field.
 							participants.get(c).updateTime();
 							//Mark their indicator as OK, with a green color.
-							participants.get(i).getIndicator().SetLampColor(1);
+							participants.get(c).getIndicator().SetLampColor(1);
 							newSender = false;
 						}
 					}

@@ -146,7 +146,7 @@ class MaintenanceMonitor extends Thread
 
 					//Check the message's sender. 
 					boolean newSender = true;
-					for (int c = 0; c < participants.size(); c++){
+					for (int c = 0; c <= participants.size() - 1; c++){
 						if (participants.get(c).getID() == Msg.GetSenderId()){
 							//If they're not a new sender, update the corresponding array element's last time seen field.
 							participants.get(c).updateTime();
@@ -192,7 +192,7 @@ class MaintenanceMonitor extends Thread
 
 				//Check if any participants have timed out, since we won't have updated their status.
 				//Iterate through all components in the array.
-				for (int i = 0; i < participants.size(); i++){
+				for (int i = 0; i <= participants.size() - 1; i++){
 					//Check when we last saw them. If it's been longer than 2 seconds, make an alert and change their indicator to reflect an error.
 					if (participants.get(i).getLastMessageTime() - System.currentTimeMillis() > 2000){
 						mw.WriteMessage(participants.get(i).getComponentType() 

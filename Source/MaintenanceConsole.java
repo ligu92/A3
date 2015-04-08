@@ -19,7 +19,7 @@
 import TermioPackage.*;
 import MessagePackage.*;
 
-public class SecurityConsole
+public class MaintenanceConsole
 {
 	public static void main(String args[])
 	{

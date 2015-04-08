@@ -13,7 +13,7 @@ the writeup suggests.
 System A
 *************
 1) Open up a terminal/command prompt
-2) Chanege directory to folder labeled "System A"
+2) Chanege directory to folder labeled "SystemA"
 3) Run "javac *.java" 
 4) Run "rmic MessageManaer"
 5) Run "rmiregistry"
@@ -46,7 +46,7 @@ To test the system:
 System B
 *************
 1) Open up a terminal/command prompt
-2) Change directory to folder labeled "System B"
+2) Change directory to folder labeled "SystemB"
 3) Run "javac *.java" 
 4) Run "rmic MessageManager"
 5) Run "rmiregistry"

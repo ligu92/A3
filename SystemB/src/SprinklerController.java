@@ -164,37 +164,6 @@ class SprinklerController {
 				for (int i = 0; i < qlen; i++) {
 					Msg = eq.GetMessage();
 
-					if (Msg.GetMessageId() == 6) {
-						if (Msg.GetMessage().equalsIgnoreCase("Arm")) // arm
-																		// yourself
-						{
-							ArmedState = true;
-							mw.WriteMessage("Received arm message");
-
-							// Confirm that the message was recieved and acted
-							// on
-							sendMsg.setCharAt(0, '1');
-							ConfirmMessage(em, sendMsg.toString());
-							continue;
-
-						} // if
-
-						if (Msg.GetMessage().equalsIgnoreCase("Disarm")) // disarm
-																			// in
-																			// peace
-						{
-							ArmedState = false;
-							mw.WriteMessage("Received disarm message");
-
-							// Confirm that the message was recieved and acted
-							// on
-							sendMsg.setCharAt(0, '0');
-							sendMsg.setCharAt(1, '0');
-							ConfirmMessage(em, sendMsg.toString());
-							continue;
-						} // if
-					} // if
-
 					if (Msg.GetMessageId() == 9) {
 						if (Msg.GetMessage().equalsIgnoreCase("Sprinkle")) // broken
 																			// window

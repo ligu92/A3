@@ -38,7 +38,7 @@ public class SecurityConsole
 	static JOptionPane sprinklerStopAlert=new JOptionPane("\n Stop Sprinkler\n This will also stop fire", JOptionPane.QUESTION_MESSAGE,JOptionPane.OK_CANCEL_OPTION);
 	static JDialog sprinklerStopDialog = sprinklerStopAlert.createDialog("Sprinkle Stop!");
 	static String sprinkleOffSelection="No selection";
-	//static JDialog dialog1 = userAlert.createDialog("timeup");
+	static boolean sprinklerTurnoffPrompt=false;
 	static boolean startprompting=false;
 	static boolean promptingStarted=false;
 	static boolean fire_detect = false;
@@ -53,7 +53,8 @@ public class SecurityConsole
 		
 		// These parameters allow the console to internally keep track of
 		// whether the system is armed and which alarms have been triggered
-		boolean alarms_armed = false;
+		//boolean alarms_armed = false;
+		boolean reset = false;
 
 		sprinklerStopDialog.setVisible(false);
 
@@ -87,9 +88,12 @@ public class SecurityConsole
 		tSprinklerTurnoff = new Thread(new Runnable() {
 		public void run() {
 	while(true){
-		if(sprinkler_start && !sprinklerStopDialog.isVisible()){// If sprinkler on allow user to turn off sprinkler. This also turns off fire alarm.
-			sprinklerStopDialog.setVisible(true);
+		if(sprinkler_start && !sprinklerStopDialog.isVisible() && sprinklerTurnoffPrompt){// If sprinkler on allow user to turn off sprinkler. This also turns off fire alarm.
+		        	sprinklerStopDialog.setVisible(true);
+		        	sprinklerTurnoffPrompt=false;
+						if(sprinklerStopAlert.getValue()!=null)
 						sprinkleOffSelection=sprinklerStopAlert.getValue().toString();
+						
 			          if(sprinkleOffSelection!=null && sprinkleOffSelection.equalsIgnoreCase("0")){//Sprinkle start yes
 							if (sprinkler_start) {
 								sprinkler_start = false;
@@ -139,48 +143,13 @@ public class SecurityConsole
 				
 				// Gives the user options to interact with the system
 				System.out.println( "Select an Option: \n" );
-				System.out.println( "1: Arm security alarms" );
-				System.out.println( "2: Disarm security alarms" );
 				System.out.println( "6: Fire Detected" );
+				System.out.println( "7: Reset" );
 				System.out.println( "X: Stop System\n" );
 				System.out.print( "\n>>>> " );
 				
 				//Sprinkler option wont be given should happen on its own
 				Option = UserInput.KeyboardReadString();
-
-				//////////// option 1 ////////////
-
-				if ( Option.equals( "1" ) ) {
-					// Here we arm the system if it's not armed, otherwise
-					// we just notify the user and do nothing.
-					if (!alarms_armed) {
-						alarms_armed = true;
-						Monitor.SetArmedStatus(true);
-					}
-					else {
-						System.out.println("Alarms are already armed.");
-					}
-				} // if
-
-				//////////// option 2 ////////////
-
-				if ( Option.equals( "2" ) ) {
-					// Here we disarm the system if it's armed, otherwise
-					// we just notify the user and do nothing.
-					// Disarming the alarm also sets everything intrusion
-					// detector to be status ok
-					if (alarms_armed) {
-						alarms_armed = false;
-						fire_detect = false;
-						sprinkler_start=false;
-						Monitor.SetArmedStatus(false);
-						Monitor.SetFireStatus(false);
-						Monitor.SetSprinklerStatus(false);
-					}
-					else {
-						System.out.println("Alarms are already disarmed.");
-					}
-				} // if
 
 				//////////// option 6 ////////////
 
@@ -194,13 +163,30 @@ public class SecurityConsole
 						    promptingStarted=false;
 						}
 						startprompting=true;
-						//promptingStarted=false;
 					}
 					else {
 						System.out.println("Fire already detected.");
 					}
 				} // if
 				
+				if ( Option.equals( "7" ) ) {
+					// Resetting
+					if (fire_detect) {
+						fire_detect = false;
+						Monitor.SetFireStatus(false);
+					}
+					else {
+						System.out.println("Fire already Off.");
+					}
+					if (sprinkler_start) {
+						sprinkler_start = false;
+						Monitor.SetSprinklerStatus(false);
+					}
+					else {
+						System.out.println("Sprinkler already Off.");
+					}
+					
+				} // if
 				
 				//////////// option X ////////////
 
@@ -236,7 +222,7 @@ public static void startPrompt(){
 				promptStartTime=System.currentTimeMillis();
 			}
 			while(true){
-				if(selection.equalsIgnoreCase("0")){//Sprinkle start yes
+				if(selection!=null && selection.equalsIgnoreCase("0")){//Sprinkle start yes
 					if (!sprinkler_start) {
 						sprinkler_start = true;
 						Monitor.SetSprinklerStatus(true);
@@ -245,18 +231,11 @@ public static void startPrompt(){
 						System.out.println("Sprinkler already on.");
 					}
 					dialog.setVisible(false);
+					sprinklerTurnoffPrompt=true;
 					selection="No selection";
 					break;
 				}
-				if(selection.equalsIgnoreCase("1")){//Sprinkle start no indicating false alarm
-					if (fire_detect) {
-						fire_detect = false;
-						Monitor.SetFireStatus(false);
-					}
-					else {
-						System.out.println("Fire alarm already off.");
-					}
-					
+				if(selection!=null && selection.equalsIgnoreCase("1")){//Sprinkle start no indicating false alarm
 					if (sprinkler_start) {
 						sprinkler_start = false;
 						Monitor.SetSprinklerStatus(false);
@@ -271,7 +250,7 @@ public static void startPrompt(){
 				}
 				elapsedTime=(System.currentTimeMillis()-promptStartTime);
 				if(elapsedTime>=10000){//Make default sprinkle action
-					if (!sprinkler_start) {
+					if (!sprinkler_start && jp.getValue()!=null) {//ensures close button press
 						sprinkler_start = true;
 						Monitor.SetSprinklerStatus(true);
 					}
@@ -280,6 +259,7 @@ public static void startPrompt(){
 					}
 					dialog.setVisible(false);
 					selection="No selection";
+					sprinklerTurnoffPrompt=true;
 					break;
 				}
 			}
@@ -292,11 +272,13 @@ public static void startPrompt(){
 		public void run() {
 			dialog.setVisible(true);
 			while(true){
+			 if(jp.getValue() != null)
 	          selection=jp.getValue().toString();
-	          if(selection.equalsIgnoreCase("0")){//Sprinkle start yes
+			 
+	          if(selection!=null && selection.equalsIgnoreCase("0")){//Sprinkle start yes
 					break;
 				}
-				if(selection.equalsIgnoreCase("1")){//Sprinkle start no indicating false alarm
+				if(selection!=null && selection.equalsIgnoreCase("1")){//Sprinkle start no indicating false alarm
 					break;
 				}
 				if(elapsedTime>=10000){

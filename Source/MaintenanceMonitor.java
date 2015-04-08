@@ -160,7 +160,7 @@ class MaintenanceMonitor extends Thread
 						participants.add(new Client(System.currentTimeMillis(), Msg.GetSenderId(), Msg.GetMessageId()));
 						
 						//Create a new indicator for the new participant, and assign it to that participant.
-						indicators.add(new Indicator(participants.get(participants.size() - 1).getComponentType() + " ID:" +  Msg.GetSenderId(), (50 * (indicators.size() % (3))), (20 * indicators.size()) % 500, 1));
+						indicators.add(new Indicator(participants.get(participants.size() - 1).getComponentType() + "\nID:" +  Msg.GetSenderId(), (50 * (indicators.size() % (3))), (20 * indicators.size()) % 500, 1));
 						participants.get(participants.size() - 1).setIndicator(indicators.get(indicators.size() - 1));
 					}
 									

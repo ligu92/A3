@@ -57,8 +57,8 @@ class Client {
 			//If the message code is -9, then they're a SprinklerController.
 			return "Sprinkler Controller";
 		}
-		if (messageCode == 10 || messageCode == 7 || messageCode == 6){
-			//If the message code is 10, 7, 6, then they're a SecurityMonitor.
+		if (messageCode == 8 || messageCode == 7 || messageCode == 6){
+			//If the message code is 8, 7, 6, then they're a SecurityMonitor.
 			return "Security Monitor";
 		}
 		if (messageCode == -6){

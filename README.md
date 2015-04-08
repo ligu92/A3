@@ -10,7 +10,7 @@ System A
 2) Chanege directory to folder labeled "System A"
 3) Run "javac *.java" 
 4) Run "rmic MessageManaer"
-5) Run "rmigistry"
+5) Run "rmiregistry"
 6) In a new terminal/cmd tab/window, run "java MessageManager"
 7) In a third terminal/cmd tab/window, run "java SecurityConsole"
 8) In a fourth terminal/cmd tab/window, run "java AlarmsController"

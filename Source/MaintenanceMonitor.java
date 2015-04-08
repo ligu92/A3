@@ -199,14 +199,14 @@ class MaintenanceMonitor extends Thread
 						+ " with ID: " 
 						+ participants.get(i).getID() 
 						+ " has not responded for " 
-						+ (participants.get(i).getLastMessageTime() - System.currentTimeMillis()) 
+						+ Math.abs((participants.get(i).getLastMessageTime() - System.currentTimeMillis())) 
 						+ "ms and is in need of maintenance.");
 						
 						participants.get(i).getIndicator().SetLampColor(3);
 					}
 				}
 				
-				// This delay slows down the sample rate to Delay milliseconds
+				// This delay slows down the sample rate to Delay mi(lliseconds
 				try
 				{
 					Thread.sleep( Delay );

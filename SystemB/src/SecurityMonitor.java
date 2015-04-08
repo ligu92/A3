@@ -266,7 +266,7 @@ class SecurityMonitor extends Thread {
 
 				long endTime = System.currentTimeMillis();
 
-				if (endTime - startTime > 6000) {
+				if (endTime - startTimeFire > 6000) {
 					mw.WriteMessage("Fire controller has not repsonded for more than 6 seconds, please alert the Fire Department.");
 					mw.WriteMessage("Alarm has not responded for:"
 							+ (endTime - startTimeFire));
